@@ -1,0 +1,180 @@
+--SQL Capstone Project-2---
+
+Select * from sales_fact;
+
+Select * from category_dim;
+
+Select * from geography_dim;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q1-What is the highest sales amount in a day?
+
+Select Sum(sale_amt), day(date)
+from sales_fact
+Group by day(date)
+Order by Sum(sale_amt) DESC;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q2-What is the total sales of the category ‘Dairy’?
+
+Select category_desc, Sum(sale_amt)
+from sales_fact as s
+    INNER JOIN category_dim as c 
+    ON s.product_id = c.product_id 
+    Where category_desc = 'Dairy'
+    Group by category_desc
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q3-Which city has the highest sales?
+
+Select city, sum(sale_amt) as Total_sales
+from geography_dim as g
+   INNER JOIN sales_fact as s 
+   ON g.store_id = s.store_id
+   Group by city
+   Order by Total_sales DESC;
+ ---------------------------------------------------------------------------------------------------------------------------------------------------  
+ Q4-How many customers spent less than Rs. 3000?
+ 
+Select count(*)
+from (Select customer_id, sum(sale_amt) as sales
+ from sales_fact as s
+ Group by customer_id
+ Having sum(sale_amt) < 3000
+ Order by sales DESC) s;
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+Q5-What is the sales of the category ‘Cereals’ in the city Bangalore?
+
+Select category_desc, city, sum(sale_amt) as Sales
+from sales_fact as s 
+      INNER JOIN category_dim as c 
+      ON s.product_id = c.product_id
+      INNER JOIN geography_dim as g 
+      ON s.store_id = g.store_id
+      Where category_desc = 'Cereals' AND city = 'Bangalore';
+      
+Or using Group by---
+
+Select category_desc, sum(priceusd*quantity) as sales
+from
+`sales_fact` a
+inner join
+`category_dim` b
+on a.product_id=b.product_id
+inner join
+`geography_dim` c
+on a.store_id=c.store_id
+where city='Bangalore'
+group by category_desc
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q6-Which category is the top category in terms of sales for the location Mumbai?
+
+Select category_desc, city, Sum(sale_amt) as sales
+from sales_fact as s 
+      INNER JOIN category_dim as c 
+      ON s.product_id = c.product_id
+      INNER JOIN geography_dim as g 
+      ON s.store_id = g.store_id
+      where city = 'Mumbai'
+     Group by category_desc
+     Order by sales DESC;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q7-What is the highest sales value of category Drinks and Beverages in a single transaction? Value should reflect only sales of the mentioned category.
+
+Select transaction_id, category_desc,sum(sale_amt)
+from sales_fact as s 
+      INNER JOIN category_dim as c 
+      ON s.product_id = c.product_id
+      Where category_desc= 'Drinks & Bevrages'
+      Group by transaction_id
+      Order by sum(sale_amt) DESC; 
+  ---------------------------------------------------------------------------------------------------------------------------------------------------    
+Q8- What is the average amount spent per customer in Chennai?
+
+Select city, sum(sale_amt)/count(distinct customer_id) as avg
+from sales_fact as s
+     INNER JOIN geography_dim as g 
+     ON s.store_id = g.store_id
+     where city = 'Chennai'
+     Group by city
+---------------------------------------------------------------------------------------------------------------------------------------------------    
+Q9-What is the sales amount of the lowest selling product in ‘Cereals’?
+
+Select s.product_id, sum(sale_amt) as sales
+from sales_fact as s 
+     INNER JOIN category_dim as c 
+     ON s.product_id = c.product_id
+     where category_desc= "Cereals"
+     Group by s.product_id
+     Order by sales ASC;
+     
+ --Another Way---    
+Select a.product_id, sum(priceusd*quantity) as sales
+from
+`sales_fact` a
+inner join
+`category_dim` b
+on a.product_id=b.product_id
+where category_desc = 'Cereals'
+group by a.product_id
+order by sales asc
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q10-What is the average revenue per customer in Maharashtra?
+
+Select sum(sale_amt)/count(distinct s.customer_id) as avg
+from sales_fact as s 
+INNER JOIN geography_dim as g 
+ON s.store_id = g.store_id
+where state= 'Maharashtra'
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q11-How many customers in Karnataka spent less than Rs 3000?
+
+Select count(*)
+from ( Select state, customer_id, sum(sale_amt)
+       from sales_fact as s 
+       INNER JOIN geography_dim as g 
+       ON s.store_id = g.store_id
+       where state = 'Karnataka'
+       Group by customer_id
+       Having sum(sale_amt) < 3000) s;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q12-How many cities have average revenue per customer lesser than Rs 3500?
+
+Select count(*)
+from 
+      (Select city, sum(sale_amt)/count(distinct s.customer_id) as ARPU
+      from sales_fact as s 
+      INNER JOIN geography_dim as g 
+      ON s.store_id = g.store_id
+      Group by city
+      Having ARPU < '3500') s;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q13-Which product was bought by the most number of customers?
+
+Select product_id, count(distinct customer_id) as cust
+from
+`sales_fact` a
+Group by product_id
+Order by cust DESC;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q14-How many products were bought by at least 5 customers in Maharashtra?
+
+Select count(*)
+from  (Select product_id, count(distinct s.customer_id) as cust
+        from sales_fact as s 
+       INNER JOIN geography_dim as g 
+       ON s.store_id = g.store_id
+       where state = 'Maharashtra'
+       Group by product_id
+       Having cust >= 5) s;
+  ---------------------------------------------------------------------------------------------------------------------------------------------------     
+Q15- What is the highest average amount spent per product by a customer?
+     
+ 
+Select sum(priceusd*quantity)/sum(quantity) as ARPP
+from sales_fact
+Group by customer_id
+Order by ARPP DESC
+limit 1;
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+       
+       
+       
